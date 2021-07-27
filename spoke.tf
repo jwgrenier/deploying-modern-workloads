@@ -2,13 +2,18 @@ resource "random_integer" "spoke" {
   min = 999
   max = 99999
   keepers = {
-    rg = var.spoke_resource_group
+    rg = azurerm_resource_group.spoke.name
   }
+}
+
+resource "azurerm_resource_group" "spoke" {
+  name               = "dmw-lab-jwg-spoke"
+  location          = var.location
 }
 
 resource "azurerm_virtual_network" "spoke" {
   name                = format("%s-%s", var.prefix, "vnet")
-  resource_group_name = var.spoke_resource_group
+  resource_group_name = azurerm_resource_group.spoke.name
   location            = var.location
 
   address_space = [local.networks.spoke.address_space]
@@ -16,7 +21,7 @@ resource "azurerm_virtual_network" "spoke" {
 
 resource "azurerm_subnet" "app" {
   name                 = "App"
-  resource_group_name  = var.spoke_resource_group
+  resource_group_name  = azurerm_resource_group.spoke.name
   virtual_network_name = azurerm_virtual_network.spoke.name
 
   address_prefixes = [cidrsubnet(local.networks.spoke.address_space, 8, 0)]
@@ -33,7 +38,7 @@ resource "azurerm_subnet" "app" {
 
 resource "azurerm_virtual_network_peering" "spoke" {
   name                      = "PeerFromSpokeToHub"
-  resource_group_name       = var.spoke_resource_group
+  resource_group_name       = azurerm_resource_group.spoke.name
   virtual_network_name      = azurerm_virtual_network.spoke.name
   remote_virtual_network_id = azurerm_virtual_network.hub.id
 
@@ -50,7 +55,7 @@ resource "azurerm_virtual_network_peering" "spoke" {
 resource "azurerm_container_group" "app" {
   name                = format("%s%s", "demo-app", random_integer.spoke.result)
   location            = var.location
-  resource_group_name = var.spoke_resource_group
+  resource_group_name = azurerm_resource_group.spoke.name
   ip_address_type     = "Public"
   dns_name_label      = format("%s-%s", var.prefix, random_integer.spoke.result)
   os_type             = "linux"
