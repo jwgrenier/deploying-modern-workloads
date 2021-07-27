@@ -3,12 +3,6 @@ name: Terraform Destroy
 on:
   workflow_dispatch:
     inputs:
-      namePrefix:
-        description: "Prefix for naming"
-        required: true
-      nameDigits:
-        description: "The digits used for unique naming"
-        required: true
       tfvarsFile:
         description: "'.tfvars' file with variable values"
         required: true
@@ -32,7 +26,7 @@ jobs:
           terraform_wrapper: false
 
       - name: Terraform Init
-        run: terraform init -backend-config="resource_group_name=dmw-lab-${{ github.event.inputs.nameDigits }}-${{ github.event.inputs.namePrefix }}-hub" -backend-config="storage_account_name=${{ github.event.inputs.namePrefix }}cloudshell${{ github.event.inputs.nameDigits }}" -backend-config="container_name=terraform-state" -backend-config="key=terraform.tfstate"
+        run: terraform init -backend-config="resource_group_name=cloud-shell-storage-eastus2" -backend-config="storage_account_name=jwgcloudshelluse2" -backend-config="container_name=terraform-state" -backend-config="key=terraform.tfstate"
 
       - name: Terraform Destroy
         run: terraform destroy -auto-approve -var-file '${{ github.event.inputs.tfvarsFile }}'
