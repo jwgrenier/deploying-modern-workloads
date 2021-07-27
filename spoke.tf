@@ -7,7 +7,7 @@ resource "random_integer" "spoke" {
 }
 
 resource "azurerm_resource_group" "spoke" {
-  name               = "dmw-lab-jwg-spoke"
+  name               = var.spoke_resource_group
   location          = var.location
 }
 
